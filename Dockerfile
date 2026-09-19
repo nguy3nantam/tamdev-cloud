@@ -4,8 +4,10 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+# Dùng npm install (không cần package-lock.json) để repo clone từ GitHub
+# cũng build được mà không yêu cầu lock file.
+COPY package.json ./
+RUN npm install
 
 COPY astro.config.mjs tsconfig.json ./
 COPY public/ public/
