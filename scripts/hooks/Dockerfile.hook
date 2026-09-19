@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine
+
+RUN apk add --no-cache git bash openssh-client curl docker-cli
+
+RUN mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -fsSL \
+      -o /usr/local/lib/docker/cli-plugins/docker-compose \
+      https://github.com/docker/compose/releases/download/v2.35.0/docker-compose-linux-x86_64 \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+COPY scripts/hooks/server.mjs /app/scripts/hooks/server.mjs
+
+WORKDIR /app
+EXPOSE 8777
+CMD ["node", "/app/scripts/hooks/server.mjs"]
