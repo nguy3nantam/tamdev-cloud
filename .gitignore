@@ -27,6 +27,9 @@ public/og-blog-*.png
 # fonts local cho script tạo OG — dùng font hệ thống khi build
 scripts/fonts/
 
+# lock file không commit (Docker build dùng `npm install`)
+package-lock.json
+
 # macOS
 .DS_Store
 
