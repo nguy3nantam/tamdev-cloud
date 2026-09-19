@@ -1,0 +1,31 @@
+{
+  "name": "tamdev.cloud",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "mcp": "tsx scripts/mcp-server.ts",
+    "og": "node scripts/generate-og.mjs",
+    "deploy": "bash deploy.sh",
+    "watch": "node scripts/watch.mjs",
+    "watch:deploy": "node scripts/watch.mjs --deploy"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.2.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "astro": "^5.2.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "sharp": "^0.35.4",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3"
+  }
+}
