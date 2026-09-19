@@ -1,0 +1,104 @@
+---
+import Layout from './Layout.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { ui, localizedPath, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  pathname: string;
+  entry: CollectionEntry<'blog'>;
+}
+
+const { locale, pathname, entry } = Astro.props;
+const t = ui[locale];
+const { title, description, pubDate, tags, id } = entry.data;
+
+const otherLang = locale === 'vi' ? 'en' : 'vi';
+const otherPost = (await getCollection('blog')).find(
+  (p) => p.data.lang === otherLang && p.data.id === id
+);
+const otherSlug = otherPost
+  ? otherPost.slug.replace(/^(vi|en)\//, '')
+  : null;
+const alternateHref = otherPost ? `${localizedPath('/blog', otherLang)}/${otherSlug}/` : undefined;
+
+const { Content } = await render(entry);
+
+function formatDate(iso: string | Date, lang: string): string {
+  return new Date(iso).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const readingMinutes = Math.max(1, Math.round(entry.body.replace(/\s/g, '').length / 1500));
+const ogImagePath = `/og-blog-${locale}-${entry.slug.replace(/^(vi|en)\//, '')}.png`;
+
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BlogPosting',
+      '@id': `${Astro.site?.href}#article`,
+      headline: title,
+      description,
+      image: new URL(ogImagePath, Astro.site).href,
+      datePublished: pubDate.toISOString(),
+      dateModified: entry.data.updatedDate?.toISOString() ?? pubDate.toISOString(),
+      inLanguage: locale,
+      author: { '@id': `${Astro.site?.href}#person` },
+      isPartOf: { '@id': `${Astro.site?.href}#website` },
+      mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+      keywords: tags.join(', '),
+    },
+  ],
+};
+---
+
+<Layout
+  title={title}
+  description={description}
+  locale={locale}
+  pathname={pathname}
+  alternateHref={alternateHref}
+  image={ogImagePath}
+>
+  <article class="article">
+    <span class="badge">
+      <a href={localizedPath('/blog', locale)}>&larr; {t.blog.backToBlog}</a>
+    </span>
+
+    <h1>{title}</h1>
+
+    <div class="post-meta">
+      <time datetime={pubDate.toISOString()}>
+        {t.blog.publishedOn} {formatDate(pubDate, locale)}
+      </time>
+      <span>{readingMinutes} {t.blog.minRead}</span>
+      {
+        tags.length > 0 && (
+          <span class="post-tags">
+            {tags.map((tag) => <span class="tag">{tag}</span>)}
+          </span>
+        )
+      }
+    </div>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <p class="mt-4 center">
+      {
+        otherPost && alternateHref && (
+          <a class="btn btn-secondary" href={alternateHref} rel="alternate" hreflang={otherLang}>
+            {locale === 'vi' ? 'Read in English' : 'Đọc bản tiếng Việt'}
+          </a>
+        )
+      }
+    </p>
+  </article>
+
+  <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+</Layout>

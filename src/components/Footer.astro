@@ -1,0 +1,75 @@
+---
+import { ui, localizedPath, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+const year = new Date().getFullYear();
+
+const nav = [
+  { path: '/', label: t.nav.home },
+  { path: '/about', label: t.nav.about },
+  { path: '/services', label: t.nav.services },
+  { path: '/blog', label: t.nav.blog },
+  { path: '/contact', label: t.nav.contact },
+].map((item) => ({ ...item, href: localizedPath(item.path, locale) }));
+
+const socials = [
+  {
+    label: 'GitHub',
+    href: 'https://github.com/tamdev',
+    icon: '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.082-.73.082-.73 1.205.085 1.84 1.237 1.84 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.42-1.305.762-1.605-2.665-.305-5.467-1.334-5.467-5.93 0-1.31.468-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.983-.398 3.003-.403 1.02.005 2.047.137 3.006.403 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.24 2.873.118 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.807 5.625-5.48 5.92.43.372.814 1.102.814 2.223 0 1.606-.015 2.898-.015 3.293 0 .32.216.694.825.576C20.565 21.796 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>',
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/tamdev',
+    icon: '<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.554V9h3.565v11.452z"/>',
+  },
+  {
+    label: 'Email',
+    href: 'mailto:hello@tamdev.cloud',
+    icon: '<path d="M2.5 4A2.5 2.5 0 0 0 0 6.5v11A2.5 2.5 0 0 0 2.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 13.5 4h-11zM12 5l-4.688 5H2v2h4.812L12 17l5.188-5H22V10h-5.312L12 5z"/>',
+  },
+];
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href={localizedPath('/', locale)} class="logo">tam<span>dev</span></a>
+        <p class="footer-tagline">{t.footer.tagline}</p>
+      </div>
+
+      <div>
+        <h4>{t.footer.navTitle}</h4>
+        <nav class="footer-nav" aria-label={locale === 'vi' ? 'Điều hướng chân trang' : 'Footer navigation'}>
+          {nav.map((item) => (
+            <a href={item.href}>{item.label}</a>
+          ))}
+        </nav>
+      </div>
+
+      <div>
+        <h4>{t.footer.socialTitle}</h4>
+        <div class="social-links">
+          {
+            socials.map((social) => (
+              <a class="social-link" href={social.href} target={social.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" aria-label={social.label}>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={social.icon} />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {year} tamdev.cloud</span>
+      <span>{t.footer.copyright}</span>
+    </div>
+  </div>
+</footer>

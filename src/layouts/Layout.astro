@@ -1,0 +1,132 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyContact from '../components/StickyContact.astro';
+import { ui, switchToPath, type Locale } from '../i18n';
+
+interface Props {
+  title?: string;
+  description?: string;
+  locale: Locale;
+  pathname: string;
+  alternateHref?: string;
+  image?: string;
+}
+
+const { title, description, locale, pathname, alternateHref, image } = Astro.props;
+const t = ui[locale];
+const pageTitle = title
+  ? title.toLowerCase().includes('tamdev')
+    ? title
+    : `${title} · tamdev`
+  : 'tamdev · Freelance Software Engineer';
+const pageDescription = description ?? t.meta.defaultDescription;
+const currentUrl = new URL(Astro.url.pathname, Astro.site);
+const alternatePath = alternateHref ?? switchToPath(pathname, locale);
+const alternateUrl = new URL(alternatePath, Astro.site);
+const alternateLocale = locale === 'vi' ? 'en' : 'vi';
+const xDefaultPath = pathname.replace(/^\/en/, '') || '/';
+const xDefaultUrl = new URL(xDefaultPath, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : new URL('/og.png', Astro.site).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${Astro.site?.href}#website`,
+      url: Astro.site?.href,
+      name: 'tamdev',
+      description: t.meta.defaultDescription,
+      inLanguage: [locale],
+    },
+    {
+      '@type': 'Person',
+      '@id': `${Astro.site?.href}#person`,
+      name: 'Tam Nguyen',
+      alternateName: 'tamdev',
+      url: Astro.site?.href,
+      jobTitle: 'Freelance Software Engineer',
+      email: 'hello@tamdev.cloud',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Hanoi',
+        addressCountry: 'VN',
+      },
+      knowsLanguage: ['vi', 'en'],
+      sameAs: ['https://github.com/tamdev', 'https://www.linkedin.com/in/tamdev'],
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={locale} data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="tamdev" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={currentUrl.href} />
+    <meta property="og:locale" content={locale === 'vi' ? 'vi_VN' : 'en_US'} />
+    <meta property="og:locale:alternate" content={locale === 'vi' ? 'en_US' : 'vi_VN'} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageTitle} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={pageTitle} />
+
+    <link rel="canonical" href={currentUrl.href} />
+    <link rel="alternate" hreflang={locale} href={currentUrl.href} />
+    <link rel="alternate" hreflang={alternateLocale} href={alternateUrl.href} />
+    <link rel="alternate" hreflang="x-default" href={xDefaultUrl.href} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`tamdev blog (${locale})`}
+      href={new URL(`/rss/${locale}.xml`, Astro.site).href}
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <Header locale={locale} pathname={pathname} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <StickyContact locale={locale} />
+
+    <script>
+      const elements = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const observer = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          }
+        }, { threshold: 0.12 });
+        elements.forEach((el) => observer.observe(el));
+      } else {
+        elements.forEach((el) => el.classList.add('visible'));
+      }
+    </script>
+  </body>
+</html>
