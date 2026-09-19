@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HomePage from '../components/pages/HomePage.astro';
+import { ui } from '../i18n';
+
+const locale = 'vi' as const;
+const t = ui[locale];
+---
+
+<Layout locale={locale} pathname={Astro.url.pathname} title={t.meta.home.title} description={t.meta.home.description}>
+  <HomePage locale={locale} />
+</Layout>

@@ -1,0 +1,12 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import BlogListPage from '../../../components/pages/BlogListPage.astro';
+import { ui } from '../../../i18n';
+
+const locale = 'en' as const;
+const t = ui[locale];
+---
+
+<Layout locale={locale} pathname={Astro.url.pathname} title={t.meta.blog.title} description={t.meta.blog.description}>
+  <BlogListPage locale={locale} />
+</Layout>

@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('blog')).filter((p) => p.data.lang === 'vi');
+  return posts.map((post) => ({
+    params: { slug: post.slug.replace(/^vi\//, '') },
+    props: { entry: post },
+  }));
+}
+
+const { entry } = Astro.props;
+---
+
+<PostLayout locale="vi" pathname={Astro.url.pathname} entry={entry} />

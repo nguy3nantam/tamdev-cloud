@@ -1,0 +1,23 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { ui, localizedPath } from '../../i18n';
+
+const locale = 'en' as const;
+const t = ui[locale];
+---
+
+<Layout locale={locale} pathname="/en/404" title="404">
+  <section class="hero" style="padding-bottom:3rem">
+    <div class="container">
+      <span class="badge">404</span>
+      <h1 class="reveal">
+        {t.notFound.title}<br />
+        <span class="text-gradient">{t.notFound.subtitle}</span>
+      </h1>
+      <p class="hero-sub reveal">{t.notFound.description}</p>
+      <div class="mt-3">
+        <a class="btn btn-primary" href={localizedPath('/', locale)}>{t.notFound.cta}</a>
+      </div>
+    </div>
+  </section>
+</Layout>
