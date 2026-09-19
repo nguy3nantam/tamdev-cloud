@@ -1,0 +1,69 @@
+---
+import { ui, type Locale } from '../../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+---
+
+<section class="hero" style="padding-bottom:3rem">
+  <div class="container">
+    <h1 class="reveal">
+      {t.about.title}<br />
+      <span class="text-gradient">{t.about.subtitle}</span>
+    </h1>
+    <p class="hero-sub reveal">{t.about.intro}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid-2">
+      {
+        t.about.sections.map((section) => (
+          <div class="card reveal">
+            <h3>{section.heading}</h3>
+            <p class="mb-0">{section.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.about.timelineTitle}</span>
+      <h2>{t.about.timelineTitle}</h2>
+    </div>
+
+    <div class="timeline">
+      {
+        t.about.timeline.map((item, i) => (
+          <div class="timeline-item reveal" style={`animation-delay: ${i * 0.08}s`}>
+            <div class="timeline-period">{item.period}</div>
+            <div class="timeline-role">{item.role}</div>
+            <div class="timeline-org">{item.org}</div>
+            <p class="timeline-desc">{item.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.about.toolsTitle}</span>
+      <h2>{t.about.toolsTitle}</h2>
+    </div>
+    <div class="chips reveal">
+      {t.about.tools.map((tool) => <span class="chip">{tool}</span>)}
+    </div>
+  </div>
+</section>

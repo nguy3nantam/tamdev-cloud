@@ -1,0 +1,73 @@
+---
+import { ui, localizedPath, type Locale } from '../../i18n';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+
+const posts = (await getCollection('blog'))
+  .filter((p) => p.data.lang === locale)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+function formatDate(iso: string | Date, lang: string): string {
+  return new Date(iso).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function slugFor(post: { slug: string }): string {
+  return post.slug.replace(/^vi\//, '').replace(/^en\//, '');
+}
+---
+
+<section class="hero" style="padding-bottom:3rem">
+  <div class="container">
+    <h1 class="reveal">
+      {t.blog.title}<br />
+      <span class="text-gradient">{t.blog.subtitle}</span>
+    </h1>
+  </div>
+</section>
+
+<section class="section" style="padding-top:2rem">
+  <div class="container">
+    {
+      posts.length > 0 ? (
+        <div class="grid-3">
+          {
+            posts.map((post, i) => (
+              <article class="card post-card reveal" style={`animation-delay: ${i * 0.06}s`}>
+                <div class="post-meta">
+                  <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, locale)}</time>
+                  {
+                    post.data.tags.length > 0 && (
+                      <span class="post-tags">
+                        {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+                      </span>
+                    )
+                  }
+                </div>
+                <h3>{post.data.title}</h3>
+                <p>{post.data.description}</p>
+                <a class="read-more" href={`${localizedPath('/blog', locale)}/${slugFor(post)}`}>
+                  {t.blog.readMore}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </article>
+            ))
+          }
+        </div>
+      ) : (
+        <p class="center">{t.blog.noPosts}</p>
+      )
+    }
+  </div>
+</section>

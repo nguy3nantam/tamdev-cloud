@@ -1,0 +1,89 @@
+---
+import { ui, localizedPath, type Locale } from '../../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+
+const services = t.services.items.map((service, i) => ({ ...service, i }));
+
+const checkIcon =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+---
+
+<section class="hero" style="padding-bottom:3rem">
+  <div class="container">
+    <h1 class="reveal">
+      {t.services.title}<br />
+      <span class="text-gradient">{t.services.subtitle}</span>
+    </h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid-3">
+      {
+        services.map((service, i) => (
+          <article class="card reveal" style={`animation-delay: ${i * 0.08}s`}>
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </div>
+            <h3>{service.title}</h3>
+            <p>{service.desc}</p>
+            <p class="mb-0">
+              <strong class="price" style="font-size:1.05rem">{service.price}</strong>
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.pricing.title}</span>
+      <h2>{t.pricing.title}</h2>
+      <p>{t.pricing.subtitle}</p>
+    </div>
+
+    <div class="grid-3">
+      {
+        t.pricing.plans.map((plan, i) => (
+          <article class={`card reveal ${i === 1 ? 'plan-featured' : ''}`} style={`animation-delay: ${i * 0.08}s`}>
+            <h3 class="plan-name">{plan.name}</h3>
+            <div class="price">
+              {plan.price}<span class="period"> {plan.period}</span>
+            </div>
+            <p class="plan-desc">{plan.desc}</p>
+            <ul class="plan-features">
+              {plan.includes.map((feature) => (
+                <li><span set:html={checkIcon} />{feature}</li>
+              ))}
+            </ul>
+            <a class="btn btn-secondary btn-sm" href={localizedPath('/contact', locale)}>{t.pricing.cta}</a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container center">
+    <div class="card reveal" style="max-width:640px;margin-inline:auto">
+      <h3 style="font-size:1.35rem">{t.services.cta}</h3>
+      <p>
+        <a class="btn btn-primary mt-2" href={localizedPath('/contact', locale)}>{t.hero.ctaSecondary}</a>
+      </p>
+    </div>
+  </div>
+</section>
