@@ -1,0 +1,186 @@
+---
+import { ui, localizedPath, switchToPath, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  pathname: string;
+}
+
+const { locale, pathname } = Astro.props;
+const t = ui[locale];
+
+const nav = [
+  { key: 'home', path: '/', label: t.nav.home },
+  { key: 'about', path: '/about', label: t.nav.about },
+  { key: 'services', path: '/services', label: t.nav.services },
+  { key: 'blog', path: '/blog', label: t.nav.blog },
+  { key: 'contact', path: '/contact', label: t.nav.contact },
+].map((item) => ({ ...item, href: localizedPath(item.path, locale) }));
+
+/**
+ * Chuẩn hoá đường dẫn để so khớp: bỏ dấu `/` ở cuối (trừ gốc `/`).
+ * Nếu không xử lý riêng mục `home`, `/en` sẽ khớp với mọi trang `/en/...`
+ * và khiến cả Home lẫn trang hiện tại cùng được đánh dấu active.
+ */
+function isActive(href: string, key: string): boolean {
+  const normalize = (value: string) => (value.length > 1 ? value.replace(/\/+$/, '') : value);
+  const current = normalize(pathname);
+  const target = normalize(href);
+  if (!target) return current === '/';
+  if (key === 'home') return current === target;
+  return current === target || current.startsWith(`${target}/`);
+}
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <a href={localizedPath('/', locale)} class="logo" aria-label="tamdev — home">
+      tam<span>dev</span><em>.</em>
+    </a>
+
+    <nav class="nav-desktop" aria-label={locale === 'vi' ? 'Điều hướng chính' : 'Main navigation'}>
+      {
+        nav.map((item) => (
+          <a href={item.href} class="nav-link" aria-current={isActive(item.href, item.key) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="header-actions">
+      <a
+        class="lang-switch"
+        href={switchToPath(pathname, locale)}
+        rel="alternate"
+        hreflang={locale === 'vi' ? 'en' : 'vi'}
+      >
+        <span class="flag">{locale === 'vi' ? '🇬🇧' : '🇻🇳'}</span>
+        {t.switchTo}
+      </a>
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-label={locale === 'vi' ? 'Mở menu' : 'Open menu'}
+        aria-expanded="false"
+        aria-controls="nav-drawer"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!--
+  Overlay + drawer nằm NGOÀI <header> để không bị kẹt trong stacking context
+  của header (header có z-index:50), nhờ đó drawer luôn nằm trên nội dung.
+-->
+<div class="nav-overlay" data-nav-dismiss></div>
+
+<aside
+  class="nav-drawer"
+  id="nav-drawer"
+  role="dialog"
+  aria-modal="true"
+  aria-label={locale === 'vi' ? 'Điều hướng di động' : 'Mobile navigation'}
+>
+  <div class="nav-drawer-head">
+    <span class="logo" aria-hidden="true">tam<span>dev</span><em>.</em></span>
+    <button
+      class="nav-close"
+      type="button"
+      aria-label={locale === 'vi' ? 'Đóng menu' : 'Close menu'}
+      data-nav-dismiss
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="6" y1="6" x2="18" y2="18" />
+        <line x1="18" y1="6" x2="6" y2="18" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="nav-drawer-nav">
+    {
+      nav.map((item) => (
+        <a href={item.href} class="nav-link" aria-current={isActive(item.href, item.key) ? 'page' : undefined}>
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+</aside>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  const drawer = document.querySelector<HTMLElement>('#nav-drawer');
+
+  if (toggle && drawer) {
+    const closeBtn = drawer.querySelector<HTMLButtonElement>('.nav-close');
+    const links = Array.from(drawer.querySelectorAll<HTMLAnchorElement>('.nav-link'));
+    let lastFocused: HTMLElement | null = null;
+
+    const isOpen = () => document.body.classList.contains('nav-open');
+
+    const open = () => {
+      lastFocused = document.activeElement as HTMLElement | null;
+      document.body.classList.add('nav-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      // Ép trình duyệt tính lại style để `visibility: visible` có hiệu lực,
+      // nếu không phần tử vẫn bị coi là ẩn và .focus() sẽ bị bỏ qua.
+      void drawer.offsetWidth;
+      closeBtn?.focus();
+    };
+
+    const close = (restoreFocus = true) => {
+      if (!isOpen()) return;
+      document.body.classList.remove('nav-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) (lastFocused ?? toggle).focus();
+    };
+
+    toggle.addEventListener('click', () => (isOpen() ? close() : open()));
+
+    document.querySelectorAll('[data-nav-dismiss]').forEach((el) => {
+      el.addEventListener('click', () => close());
+    });
+
+    // Điều hướng xong thì đóng drawer nhưng không kéo focus về nút mở.
+    links.forEach((link) => link.addEventListener('click', () => close(false)));
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') close();
+    });
+
+    // Giữ focus trong drawer khi mở (focus trap đơn giản).
+    drawer.addEventListener('keydown', (event) => {
+      if (event.key !== 'Tab') return;
+      const focusable = [closeBtn, ...links].filter(Boolean) as HTMLElement[];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    // Chuyển lên màn hình lớn thì đóng drawer để không giữ khoá cuộn trang.
+    window.matchMedia('(min-width: 769px)').addEventListener('change', (event) => {
+      if (event.matches) close(false);
+    });
+  }
+</script>
+
+<style>
+  .logo em {
+    font-style: normal;
+    color: var(--accent-2);
+  }
+</style>

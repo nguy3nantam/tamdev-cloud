@@ -1,0 +1,268 @@
+---
+import { ui, type Locale } from '../i18n';
+import { contact } from '../config/contact';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+
+/**
+ * Các kênh liên hệ nhanh. Kênh nào có `href` rỗng sẽ bị ẩn khỏi widget.
+ */
+const channels = [
+  {
+    key: 'phone',
+    label: t.contact.channels.phone,
+    href: contact.phoneHref,
+    hint: contact.phoneDisplay,
+    external: false,
+    icon: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  },
+  {
+    key: 'zalo',
+    label: t.contact.channels.zalo,
+    href: contact.zaloHref,
+    hint: '',
+    external: true,
+    icon: '<path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M9.6 9.4h4.8l-4.8 4.2h4.8"/>',
+  },
+  {
+    key: 'messenger',
+    label: t.contact.channels.messenger,
+    href: contact.messengerHref,
+    hint: '',
+    external: true,
+    icon: '<path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M13.2 9.2l-3.1 3.6h2.2l-1 2.5 3.3-3.7h-2.2l.8-2.4z"/>',
+  },
+]
+  .filter((channel) => Boolean(channel.href))
+  .map((channel) => ({
+    ...channel,
+    ariaLabel: channel.hint ? `${channel.label} — ${channel.hint}` : channel.label,
+  }));
+
+const ariaLabel = t.contact.channels.title;
+---
+
+{channels.length > 0 && (
+  <div class="sticky-contact" data-sticky-contact>
+    <nav class="sticky-contact-menu" id="sticky-contact-menu" aria-label={ariaLabel}>
+      {channels.map((channel) => (
+        <a
+          class={`sticky-contact-item is-${channel.key}`}
+          href={channel.href}
+          target={channel.external ? '_blank' : undefined}
+          rel={channel.external ? 'noreferrer' : undefined}
+          aria-label={channel.ariaLabel}
+        >
+          <span class="sticky-contact-label">{channel.label}</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            set:html={channel.icon}
+          />
+        </a>
+      ))}
+    </nav>
+
+    <button
+      class="sticky-contact-fab"
+      type="button"
+      aria-expanded="false"
+      aria-controls="sticky-contact-menu"
+      aria-label={ariaLabel}
+      data-sticky-toggle
+    >
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="6" y1="6" x2="18" y2="18" />
+        <line x1="18" y1="6" x2="6" y2="18" />
+      </svg>
+    </button>
+  </div>
+)}
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-sticky-contact]');
+  const toggle = root?.querySelector<HTMLButtonElement>('[data-sticky-toggle]');
+
+  if (root && toggle) {
+    const setOpen = (open: boolean) => {
+      root.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(!root.classList.contains('is-open'));
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!root.contains(event.target as Node)) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  /*
+   * Nút liên hệ nổi ở góc phải dưới, cách 20px so với đáy trang.
+   * Mặc định chỉ hiện 1 icon; bấm vào mới xổ ra danh sách kênh.
+   */
+  .sticky-contact {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.6rem;
+  }
+
+  /* ---------- Danh sách kênh (mở/đóng) ---------- */
+  .sticky-contact-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.96);
+    transform-origin: bottom right;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  }
+
+  .sticky-contact.is-open .sticky-contact-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .sticky-contact-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+
+  .sticky-contact-item svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .sticky-contact-item:active {
+    transform: scale(0.97);
+  }
+
+  .sticky-contact-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Màu thương hiệu cho icon từng kênh */
+  .is-phone svg {
+    color: #22d3ee;
+  }
+
+  .is-zalo svg {
+    color: #4d94ff;
+  }
+
+  .is-messenger svg {
+    color: #4da3ff;
+  }
+
+  @media (hover: hover) {
+    .sticky-contact-item:hover {
+      background: var(--surface);
+      border-color: var(--border-strong);
+    }
+  }
+
+  /* ---------- Nút chính ---------- */
+  .sticky-contact-fab {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: var(--gradient);
+    color: #05060a;
+    box-shadow: 0 8px 24px rgba(34, 211, 238, 0.35);
+    transition: transform 0.18s ease, box-shadow 0.2s ease;
+  }
+
+  .sticky-contact-fab svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sticky-contact-fab .icon-close {
+    display: none;
+  }
+
+  .sticky-contact.is-open .sticky-contact-fab .icon-open {
+    display: none;
+  }
+
+  .sticky-contact.is-open .sticky-contact-fab .icon-close {
+    display: block;
+  }
+
+  .sticky-contact-fab:active {
+    transform: scale(0.96);
+  }
+
+  .sticky-contact-fab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* Fallback cho trình duyệt cũ không hỗ trợ :focus-visible */
+  @supports not selector(:focus-visible) {
+    .sticky-contact-fab:focus,
+    .sticky-contact-item:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  }
+
+  @media (hover: hover) {
+    .sticky-contact-fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(34, 211, 238, 0.45);
+    }
+  }
+
+  @media print {
+    .sticky-contact {
+      display: none !important;
+    }
+  }
+</style>
