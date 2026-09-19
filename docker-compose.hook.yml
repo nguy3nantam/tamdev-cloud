@@ -1,0 +1,16 @@
+name: tamdev-deploy-hook
+
+services:
+  webhook:
+    container_name: tamdev-deploy-hook
+    build:
+      context: .
+      dockerfile: scripts/hooks/Dockerfile.hook
+    restart: unless-stopped
+    environment:
+      PORT: "8777"
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8777:8777"

@@ -1,0 +1,15 @@
+name: tamdev
+
+services:
+  web:
+    container_name: tamdev-cloud
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tamdev.rule=Host(`tamdev.cloud`) || Host(`www.tamdev.cloud`)
+      - traefik.http.routers.tamdev.entrypoints=websecure
+      - traefik.http.routers.tamdev.tls.certresolver=letsencrypt
+      - traefik.http.services.tamdev.loadbalancer.server.port=80

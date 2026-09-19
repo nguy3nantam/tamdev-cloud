@@ -1,0 +1,36 @@
+# build output
+dist/
+
+# astro generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# environment
+.env
+.env.*
+!.env.example
+
+# deploy hook secret
+scripts/hooks/.secret
+
+# OG images — sinh tự động bởi `npm run og`
+public/og.png
+public/og-blog-*.png
+
+# fonts local cho script tạo OG — dùng font hệ thống khi build
+scripts/fonts/
+
+# macOS
+.DS_Store
+
+# editor
+.vscode/
+.idea/
+*.swp
