@@ -1,0 +1,325 @@
+---
+import { ui, localizedPath, type Locale } from '../../i18n';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+
+const posts = (await getCollection('blog'))
+  .filter((p) => p.data.lang === locale)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const services = t.services.items.map((service, i) => ({ ...service, i }));
+
+function formatDate(iso: string | Date, lang: string): string {
+  return new Date(iso).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+---
+
+<section class="hero">
+  <div class="container">
+    <span class="badge"><span class="dot"></span>{t.hero.available}</span>
+    <h1 class="reveal">
+      {t.hero.headline.brand}<br />
+      {t.hero.headline.role}<br />
+      <span class="text-gradient">{t.hero.headline.focus}</span>
+    </h1>
+    <p class="hero-sub reveal">{t.hero.description}</p>
+    <div class="hero-actions reveal">
+      <a class="btn btn-primary" href={localizedPath('/services', locale)}>{t.hero.ctaPrimary}</a>
+      <a class="btn btn-secondary" href={localizedPath('/contact', locale)}>{t.hero.ctaSecondary}</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="trust-bar reveal">
+      {
+        t.trust.stats.map((stat) => (
+          <div class="trust-item">
+            <div class="value">{stat.value}</div>
+            <div class="label">{stat.label}</div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.skills.title}</span>
+      <h2>{t.skills.title}</h2>
+      <p>{t.skills.subtitle}</p>
+    </div>
+    <div class="tech-slider reveal" data-tech-slider data-locale={locale}>
+      <div class="tech-slider-toolbar">
+        <span class="tech-slider-hint">{locale === 'vi' ? 'Kéo hoặc vuốt để khám phá' : 'Drag or swipe to explore'}</span>
+        <div class="tech-slider-controls">
+          <button class="slider-button" type="button" data-slider-prev aria-label={locale === 'vi' ? 'Công nghệ trước' : 'Previous technology'}>←</button>
+          <button class="slider-button" type="button" data-slider-next aria-label={locale === 'vi' ? 'Công nghệ tiếp theo' : 'Next technology'}>→</button>
+        </div>
+      </div>
+      <div class="tech-slider-viewport" data-slider-viewport tabindex="0" aria-label={locale === 'vi' ? 'Các công nghệ sử dụng' : 'Technologies used'}>
+        <div class="tech-slider-track">
+          {
+            [
+              ['TS', 'TypeScript', locale === 'vi' ? 'Nền tảng type-safe cho sản phẩm lớn' : 'A type-safe foundation for large products'],
+              ['⚛', 'React', locale === 'vi' ? 'Xây dựng giao diện linh hoạt, hiệu quả' : 'Flexible and performant interfaces'],
+              ['✦', 'Astro', locale === 'vi' ? 'Website nhanh, ít JavaScript' : 'Fast websites with less JavaScript'],
+              ['JS', 'Node.js', locale === 'vi' ? 'Backend thời gian thực, có thể mở rộng' : 'Scalable, real-time backend'],
+              ['DB', 'PostgreSQL', locale === 'vi' ? 'Dữ liệu tin cậy cho ứng dụng hiện đại' : 'Reliable data for modern applications'],
+              ['GQL', 'GraphQL', locale === 'vi' ? 'API rõ ràng, truy vấn chính xác' : 'Precise queries with a clear API'],
+              ['◈', 'Docker', locale === 'vi' ? 'Đóng gói và triển khai nhất quán' : 'Consistent packaging and deployment'],
+              ['AWS', 'AWS', locale === 'vi' ? 'Hạ tầng cloud sẵn sàng mở rộng' : 'Cloud infrastructure that scales'],
+            ].map(([mark, name, description]) => (
+              <article class="tech-slide">
+                <div class="tech-mark" aria-hidden="true">{mark}</div>
+                <div>
+                  <h3>{name}</h3>
+                  <p>{description}</p>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+      <div class="slider-dots" data-slider-dots aria-label={locale === 'vi' ? 'Vị trí slider' : 'Slider position'}></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.services.title}</span>
+      <h2>{t.services.title}</h2>
+      <p>{t.services.subtitle}</p>
+    </div>
+
+    <div class="grid-3">
+      {
+        services.map((service, i) => (
+          <article class="card reveal" style={`animation-delay: ${i * 0.08}s`}>
+            <div class="feature-icon" aria-hidden="true">
+              {
+                i === 0 && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <path d="M8 21h8M12 17v4" />
+                    <path d="M7 9l3 3-3 3M13 15h4" />
+                  </svg>
+                )
+              }
+              {
+                i === 1 && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l9 5-9 5-9-5 9-5z" />
+                    <path d="M3 13l9 5 9-5" />
+                  </svg>
+                )
+              }
+              {
+                i === 2 && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                )
+              }
+            </div>
+            <h3>{service.title}</h3>
+            <p>{service.desc}</p>
+            <p class="mb-0"><strong class="price" style="font-size:1.05rem">{service.price}</strong></p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  const slider = document.querySelector('[data-tech-slider]');
+
+  if (slider instanceof HTMLElement) {
+    const viewport = slider.querySelector('[data-slider-viewport]');
+    const track = slider.querySelector('.tech-slider-track');
+    const previous = slider.querySelector('[data-slider-prev]');
+    const next = slider.querySelector('[data-slider-next]');
+    const dots = slider.querySelector('[data-slider-dots]');
+    const slides = slider.querySelectorAll('.tech-slide');
+
+    if (viewport instanceof HTMLElement && track instanceof HTMLElement && previous instanceof HTMLButtonElement && next instanceof HTMLButtonElement && dots instanceof HTMLElement && slides.length > 0) {
+      let currentIndex = 0;
+      let autoPlay: number | undefined;
+      let pointerStart = 0;
+      let scrollStart = 0;
+      let dragging = false;
+      let interacting = false;
+      let inView = !('IntersectionObserver' in window);
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const visibleSlides = () => (window.innerWidth >= 900 ? 3 : window.innerWidth >= 560 ? 2 : 1);
+      const maxIndex = () => Math.max(0, slides.length - visibleSlides());
+
+      const renderDots = () => {
+        dots.innerHTML = '';
+        for (let index = 0; index <= maxIndex(); index += 1) {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'slider-dot';
+          dot.setAttribute('aria-label', `${slider.getAttribute('data-locale') === 'vi' ? 'Đến vị trí' : 'Go to position'} ${index + 1}`);
+          dot.addEventListener('click', () => goTo(index));
+          dots.append(dot);
+        }
+      };
+
+      const goTo = (index: number) => {
+        currentIndex = Math.max(0, Math.min(index, maxIndex()));
+        const slide = slides[currentIndex] as HTMLElement;
+        viewport.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+        updateDots();
+      };
+
+      const updateDots = () => {
+        dots.querySelectorAll('.slider-dot').forEach((dot, dotIndex) => {
+          dot.classList.toggle('active', dotIndex === currentIndex);
+          dot.setAttribute('aria-pressed', String(dotIndex === currentIndex));
+        });
+      };
+
+      const stopAutoPlay = () => {
+        if (autoPlay !== undefined) window.clearInterval(autoPlay);
+      };
+
+      const startAutoPlay = () => {
+        stopAutoPlay();
+        if (reducedMotion.matches || interacting || document.hidden || !inView) return;
+        autoPlay = window.setInterval(() => goTo(currentIndex >= maxIndex() ? 0 : currentIndex + 1), 4500);
+      };
+
+      const closestIndex = () => [...slides].reduce((best, slide, index) => {
+        const distance = Math.abs(slide.getBoundingClientRect().left - viewport.getBoundingClientRect().left);
+        return distance < best.distance ? { index, distance } : best;
+      }, { index: 0, distance: Number.POSITIVE_INFINITY }).index;
+
+      previous.addEventListener('click', () => goTo(currentIndex - 1));
+      next.addEventListener('click', () => goTo(currentIndex + 1));
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'touch') return;
+        dragging = true;
+        pointerStart = event.clientX;
+        scrollStart = viewport.scrollLeft;
+        viewport.setPointerCapture(event.pointerId);
+        stopAutoPlay();
+      });
+      viewport.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        viewport.scrollLeft = scrollStart - (event.clientX - pointerStart);
+      });
+      viewport.addEventListener('pointerup', () => {
+        if (!dragging) return;
+        dragging = false;
+        goTo(closestIndex());
+        startAutoPlay();
+      });
+      viewport.addEventListener('pointercancel', () => {
+        dragging = false;
+        startAutoPlay();
+      });
+      slider.addEventListener('mouseenter', () => { interacting = true; stopAutoPlay(); });
+      slider.addEventListener('mouseleave', () => { interacting = false; startAutoPlay(); });
+      slider.addEventListener('focusin', () => { interacting = true; stopAutoPlay(); });
+      slider.addEventListener('focusout', (event) => {
+        if (event.relatedTarget instanceof Node && slider.contains(event.relatedTarget)) return;
+        interacting = false;
+        startAutoPlay();
+      });
+      viewport.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          goTo(currentIndex + (event.key === 'ArrowRight' ? 1 : -1));
+        }
+      });
+      viewport.addEventListener('scroll', () => {
+        currentIndex = closestIndex();
+        updateDots();
+      }, { passive: true });
+      document.addEventListener('visibilitychange', startAutoPlay);
+      reducedMotion.addEventListener('change', startAutoPlay);
+      if ('IntersectionObserver' in window) {
+        const visibilityObserver = new IntersectionObserver(([entry]) => {
+          inView = entry.isIntersecting;
+          if (entry.isIntersecting) startAutoPlay();
+          else stopAutoPlay();
+        });
+        visibilityObserver.observe(slider);
+      }
+      window.addEventListener('resize', () => {
+        renderDots();
+        goTo(currentIndex);
+      });
+
+      renderDots();
+      goTo(0);
+      startAutoPlay();
+    }
+  }
+</script>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">{t.blog.title}</span>
+      <h2>{t.blog.recent}</h2>
+    </div>
+
+    {
+      posts.length > 0 ? (
+        <div class="grid-3 reveal">
+          {
+            posts.map((post) => (
+              <article class="card post-card">
+                <div class="post-meta">
+                  <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, locale)}</time>
+                  {
+                    post.data.tags.length > 0 && (
+                      <span class="post-tags">
+                        {post.data.tags.slice(0, 2).map((tag) => <span class="tag">{tag}</span>)}
+                      </span>
+                    )
+                  }
+                </div>
+                <h3>{post.data.title}</h3>
+                <p>{post.data.description}</p>
+                <a class="read-more" href={`${localizedPath('/blog', locale)}/${post.slug.replace('vi/', '').replace('en/', '')}`}>
+                  {t.blog.readMore}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </article>
+            ))
+          }
+        </div>
+      ) : (
+        <p class="center">{t.blog.noPosts}</p>
+      )
+    }
+
+    <div class="center mt-4">
+      <a class="btn btn-secondary" href={localizedPath('/blog', locale)}>{t.blog.viewAll}</a>
+    </div>
+  </div>
+</section>
