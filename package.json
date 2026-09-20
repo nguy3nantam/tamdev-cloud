@@ -12,15 +12,18 @@
     "check": "astro check",
     "mcp": "tsx scripts/mcp-server.ts",
     "og": "node scripts/generate-og.mjs",
+    "icons": "node scripts/generate-icons.mjs",
     "deploy": "bash deploy.sh",
     "watch": "node scripts/watch.mjs",
     "watch:deploy": "node scripts/watch.mjs --deploy"
   },
   "dependencies": {
+    "@astrojs/node": "^9.5.5",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.2.1",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "astro": "^5.2.5"
+    "astro": "^5.2.5",
+    "marked": "^18.0.13"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

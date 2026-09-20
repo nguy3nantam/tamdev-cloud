@@ -4,8 +4,6 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Dùng npm install (không cần package-lock.json) để repo clone từ GitHub
-# cũng build được mà không yêu cầu lock file.
 COPY package.json ./
 RUN npm install
 
@@ -20,11 +18,26 @@ RUN apk add --no-cache ttf-dejavu
 # Sinh ảnh OG trước khi build
 RUN node scripts/generate-og.mjs
 
+# Sinh PNG logo/favicon từ public/logo.svg
+RUN node scripts/generate-icons.mjs
+
 RUN npm run build
 
-# ---- Stage 2: nginx runtime ----
-FROM nginx:stable-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY security-headers.conf /etc/nginx/security-headers.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+# ---- Stage 2: Node.js runtime ----
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package.json ./
+COPY --from=build /app/node_modules /app/node_modules
+
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/src /app/src
+COPY --from=build /app/public /app/public
+COPY --from=build /app/scripts /app/scripts
+
+ENV HOST=0.0.0.0
+ENV PORT=80
+ENV NODE_ENV=production
+
 EXPOSE 80
+CMD ["node", "./dist/server/entry.mjs"]

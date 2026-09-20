@@ -24,6 +24,11 @@ scripts/hooks/.secret
 public/og.png
 public/og-blog-*.png
 
+# Icons PNG — sinh tự động bởi `npm run icons` (từ public/logo.svg)
+public/logo.png
+public/favicon-32x32.png
+public/apple-touch-icon.png
+
 # fonts local cho script tạo OG — dùng font hệ thống khi build
 scripts/fonts/
 

@@ -7,6 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file:
+      - .env
     labels:
       - traefik.enable=true
       - traefik.http.routers.tamdev.rule=Host(`tamdev.cloud`) || Host(`www.tamdev.cloud`)
