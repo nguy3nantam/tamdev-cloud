@@ -3,7 +3,6 @@ import { writeFile, mkdir, readdir } from 'node:fs/promises';
 import { resolve, join, extname } from 'node:path';
 import sharp from 'sharp';
 import { isAuthenticated } from '../../../utils/admin-auth';
-import { generateIconsAndFavicon } from '../../../utils/generate-icons';
 
 export const prerender = false;
 
@@ -16,8 +15,8 @@ async function safeWrite(dirPath: string, fileName: string, content: Buffer | st
   try {
     await mkdir(dirPath, { recursive: true });
     await writeFile(join(dirPath, fileName), content as any);
-  } catch {
-    // Bỏ qua nếu thư mục không tồn tại (ví dụ dist chưa build)
+  } catch (err) {
+    // Ignore if dir doesn't exist
   }
 }
 
@@ -59,21 +58,27 @@ export const POST: APIRoute = async ({ request }) => {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Tải lên logo website
+    // Nếu người dùng chọn Tải lên Logo web (type === 'logo')
     if (type === 'logo') {
       const pngBuffer = await sharp(buffer).toFormat('png').toBuffer();
-      const logoSvg = await sharp(pngBuffer)
-        .resize(512, 512, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .png({ compressionLevel: 9 })
-        .toBuffer();
-      const b64 = logoSvg.toString('base64');
-      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="tamdev logo">\n  <title>tamdev logo</title>\n  <image href="data:image/png;base64,${b64}" x="0" y="0" width="512" height="512" />\n</svg>\n`;
+      const base64Img = pngBuffer.toString('base64');
+
+      await safeWrite(publicDir, 'logo.png', pngBuffer);
+      await safeWrite(distClientDir, 'logo.png', pngBuffer);
+
+      const isSvg = file.name.endsWith('.svg') || file.type === 'image/svg+xml';
+      let svgContent = '';
+      if (isSvg) {
+        svgContent = buffer.toString('utf8');
+      } else {
+        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="tamdev logo">
+  <title>tamdev logo</title>
+  <image href="data:image/png;base64,${base64Img}" x="0" y="0" width="1024" height="1024" />
+</svg>`;
+      }
 
       await safeWrite(publicDir, 'logo.svg', svgContent);
       await safeWrite(distClientDir, 'logo.svg', svgContent);
-
-      // Sinh lại PNG icon từ logo.svg vừa lưu
-      await generateIconsAndFavicon(svgContent);
 
       return new Response(JSON.stringify({ success: true, url: `/logo.svg?v=${Date.now()}` }), {
         status: 200,
@@ -81,20 +86,46 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Tải lên favicon
+    // Nếu người dùng chọn Tải lên Favicon (type === 'favicon')
     if (type === 'favicon') {
-      const pngBuffer = await sharp(buffer).toFormat('png').toBuffer();
-      const faviconPng = await sharp(pngBuffer)
-        .resize(256, 256, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .png({ compressionLevel: 9 })
-        .toBuffer();
-      const b64 = faviconPng.toString('base64');
-      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="tamdev favicon">\n  <title>tamdev favicon</title>\n  <image href="data:image/png;base64,${b64}" x="0" y="0" width="256" height="256" />\n</svg>\n`;
+      const isSvg = file.name.endsWith('.svg') || file.type === 'image/svg+xml';
 
-      await safeWrite(publicDir, 'favicon.svg', svgContent);
-      await safeWrite(distClientDir, 'favicon.svg', svgContent);
+      if (isSvg) {
+        const svgString = buffer.toString('utf8');
+        await safeWrite(publicDir, 'favicon.svg', svgString);
+        await safeWrite(distClientDir, 'favicon.svg', svgString);
 
-      await generateIconsAndFavicon(null);
+        try {
+          const png32 = await sharp(buffer).resize(32, 32).toFormat('png').toBuffer();
+          await safeWrite(publicDir, 'favicon-32x32.png', png32);
+          await safeWrite(distClientDir, 'favicon-32x32.png', png32);
+
+          const touchIcon = await sharp(buffer).resize(180, 180).toFormat('png').toBuffer();
+          await safeWrite(publicDir, 'apple-touch-icon.png', touchIcon);
+          await safeWrite(distClientDir, 'apple-touch-icon.png', touchIcon);
+        } catch {
+          // Fallback if SVG parsing in sharp fails
+        }
+      } else {
+        const pngBuffer = await sharp(buffer).toFormat('png').toBuffer();
+        const base64Img = pngBuffer.toString('base64');
+
+        const favIcon32 = await sharp(pngBuffer).resize(32, 32).toBuffer();
+        await safeWrite(publicDir, 'favicon-32x32.png', favIcon32);
+        await safeWrite(distClientDir, 'favicon-32x32.png', favIcon32);
+
+        const touchIcon = await sharp(pngBuffer).resize(180, 180).toBuffer();
+        await safeWrite(publicDir, 'apple-touch-icon.png', touchIcon);
+        await safeWrite(distClientDir, 'apple-touch-icon.png', touchIcon);
+
+        const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="tamdev favicon">
+  <title>tamdev favicon</title>
+  <image href="data:image/png;base64,${base64Img}" x="0" y="0" width="1024" height="1024" />
+</svg>`;
+
+        await safeWrite(publicDir, 'favicon.svg', svgContent);
+        await safeWrite(distClientDir, 'favicon.svg', svgContent);
+      }
 
       return new Response(JSON.stringify({ success: true, url: `/favicon.svg?v=${Date.now()}` }), {
         status: 200,
