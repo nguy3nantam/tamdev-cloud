@@ -1,0 +1,13 @@
+{
+  "brandName": "Tamdev",
+  "contact": {
+    "phoneDisplay": "0900 000 000",
+    "phoneHref": "tel:+84900000000",
+    "zaloHref": "https://zalo.me/0900000000",
+    "messengerHref": "https://m.me/tamdev"
+  },
+  "googleTag": {
+    "head": "",
+    "body": ""
+  }
+}
