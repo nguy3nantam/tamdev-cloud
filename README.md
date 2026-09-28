@@ -71,7 +71,7 @@ Các tool: `get_site_profile`, `list_services`, `list_blog_posts`, `get_blog_pos
 
 ### GitHub Pages (GitHub Actions)
 
-Repository đã có workflow `.github/workflows/jekyll-gh-pages.yml` để build Astro và deploy tự động lên GitHub Pages khi push lên nhánh mặc định hoặc chạy thủ công (`workflow_dispatch`).
+Repository đã có workflow `.github/workflows/astro-pages.yml` để build Astro và deploy tự động lên GitHub Pages khi push lên nhánh mặc định hoặc chạy thủ công (`workflow_dispatch`).
 
 Cần cấu hình trong **Settings > Pages**:
 - **Build and deployment**: chọn **GitHub Actions**
