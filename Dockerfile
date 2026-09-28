@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Stage 1: build Astro site ----
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json ./
@@ -24,7 +24,7 @@ RUN node scripts/generate-icons.mjs
 RUN npm run build
 
 # ---- Stage 2: Node.js runtime ----
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 COPY package.json ./
